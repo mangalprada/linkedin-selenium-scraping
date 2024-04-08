@@ -34,7 +34,7 @@ try:
             value_element = div_element.find_element(By.CSS_SELECTOR, "p.text-body-large-bold.t-black")
             title_element = div_element.find_element(By.CSS_SELECTOR, "p.text-body-small.t-black--light")
             span_element = item.find_element(By.TAG_NAME, "span")
-            timeframe_elements = span_element.find_elements(By.TAG_NAME, "span")
+            span_elements = span_element.find_elements(By.TAG_NAME, "span")
             trend_element=None
             try:
                 trend_element = span_element.find_element(By.TAG_NAME, "strong")
@@ -42,17 +42,17 @@ try:
                 print(e)
 
             trend_type = ''
-            if len(timeframe_elements)>1:
-                aria_label = timeframe_elements[0].get_attribute("aria-label")
+            if len(span_elements)>1:
+                aria_label = span_elements[0].get_attribute("aria-label")
                 if 'decrease' in aria_label:
                     trend_type = '-ve'
                 if 'increase' in aria_label:
                     trend_type = '+ve'
-                    
+
             results.append({
                 'value': value_element.text,
                 'title': title_element.text,
-                'timeframe': timeframe_elements[-1].text,
+                'timeframe': span_elements[-1].text,
                 'trend_type': trend_type,
                 'trend': trend_element.text if trend_element else ''
             })
