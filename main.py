@@ -11,54 +11,56 @@ driver = webdriver.Chrome(options=chrome_options)
 
 linkedin_url = "https://www.linkedin.com"
 
-# for _ in range(60):
-cookie='AQEDAR-5vhEAQQpxAAABjr0voAIAAAGO4TwkAk0AEBsQT-m7_AnumImlN50zqbD3LgRnQpuzEuNJVZvp4Aswy8q5ZGJv2iuawwXKHEdCZdOSkwyZtYM6imGCDmhazAwXEqrdxweXOS6BEqbvhsVfB2Ub'
-driver.get(linkedin_url)
-driver.set_window_size(1920, 1080)
-driver.add_cookie({
-                'name': 'li_at',
-                'value': cookie,
-                'domain': '.linkedin.com'
-            })
-driver.get('https://www.linkedin.com/dashboard/')
+cookie='AQEDAU1zbIIBYhEbAAABjrw16TsAAAGO4EJtO00AbKGSqp_sxB81cv00pSFQH7rawp72B2_elVE2OoAHyo-mkv8F_qCdtieFC977cntVo3Pihd7twQMDanjr2Z6zODw1E9ZSX0CCKEicy-FdDvNNTEsY'
 
-results=[]
+for _ in range(60):
+    driver.get(linkedin_url)
+    driver.set_window_size(1920, 1080)
+    driver.add_cookie({
+                    'name': 'li_at',
+                    'value': cookie,
+                    'domain': '.linkedin.com'
+                })
+    driver.get('https://www.linkedin.com/dashboard/')
 
-try:
-    items = WebDriverWait(driver, 10).until(
-        EC.presence_of_all_elements_located((By.CLASS_NAME, "pcd-analytics-view-item"))
-    )
-    for item in items:
-        try:
-            div_element = item.find_element(By.TAG_NAME, "div")
-            value_element = div_element.find_element(By.CSS_SELECTOR, "p.text-body-large-bold.t-black")
-            title_element = div_element.find_element(By.CSS_SELECTOR, "p.text-body-small.t-black--light")
-            span_element = item.find_element(By.TAG_NAME, "span")
-            span_elements = span_element.find_elements(By.TAG_NAME, "span")
-            trend_element=None
+    results=[]
+
+    try:
+        items = WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, "pcd-analytics-view-item"))
+        )
+        for item in items:
             try:
-                trend_element = span_element.find_element(By.TAG_NAME, "strong")
+                div_element = item.find_element(By.TAG_NAME, "div")
+                value_element = div_element.find_element(By.CSS_SELECTOR, "p.text-body-large-bold.t-black")
+                title_element = div_element.find_element(By.CSS_SELECTOR, "p.text-body-small.t-black--light")
+                span_element = item.find_element(By.TAG_NAME, "span")
+                span_elements = span_element.find_elements(By.TAG_NAME, "span")
+                trend_element=None
+                try:
+                    trend_element = span_element.find_element(By.TAG_NAME, "strong")
+                except Exception as e:
+                    print(e)
+
+                trend_type = ''
+                if len(span_elements)>1:
+                    aria_label = span_elements[0].get_attribute("aria-label")
+                    if 'decrease' in aria_label:
+                        trend_type = '-ve'
+                    if 'increase' in aria_label:
+                        trend_type = '+ve'
+
+                results.append({
+                    'value': value_element.text,
+                    'title': title_element.text,
+                    'timeframe': span_elements[-1].text,
+                    'trend_type': trend_type,
+                    'trend': trend_element.text if trend_element else ''
+                })
             except Exception as e:
-                print(e)
-
-            trend_type = ''
-            if len(span_elements)>1:
-                aria_label = span_elements[0].get_attribute("aria-label")
-                if 'decrease' in aria_label:
-                    trend_type = '-ve'
-                if 'increase' in aria_label:
-                    trend_type = '+ve'
-
-            results.append({
-                'value': value_element.text,
-                'title': title_element.text,
-                'timeframe': span_elements[-1].text,
-                'trend_type': trend_type,
-                'trend': trend_element.text if trend_element else ''
-            })
-        except Exception as e:
-            print("Title element not found", e)
-except Exception as e:
-    print("An exception occurred:", str(e))
+                print("Title element not found", e)
+    except Exception as e:
+        print("An exception occurred:", str(e))
+    print(_, results)
 
 driver.quit()
